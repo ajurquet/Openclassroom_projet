@@ -23,7 +23,7 @@ import requests
 import csv
 
 #url de la page du livre à scrapper
-url_livre = "http://books.toscrape.com/catalogue/finders-keepers-bill-hodges-trilogy-2_807/index.html"
+url_livre = "http://books.toscrape.com/catalogue/i-know-what-im-doing-and-other-lies-i-tell-myself-dispatches-from-a-life-under-construction_704/index.html"
 req = requests.get(url_livre)
 
 if req.ok:
@@ -41,16 +41,10 @@ if req.ok:
 
     image_source = soup.find("img").get("src")
 
-    print("""
-    Fiche Produit
-    """)
-    print("Lien vers la page : " + url_livre)
-    print("UPC : " + liste_carac_livre[0].text)
-    print("Titre : " + titre.string)
-    print("Prix TTC : " + liste_carac_livre[3].text.replace("Â", ""))
-    print("Prix HT : " + liste_carac_livre[2].text.replace("Â", ""))
-    print("Stock : " + liste_carac_livre[5].text)
-    print("Description : " + description)
-    print("Categorie : " + categorie.text.replace("\n",""))
-    print("Nombre de reviews : " + liste_carac_livre[6].text )
-    print("Lien vers l'image : " + image_source.replace("../..", "http://books.toscrape.com"))
+    with open("fiche_livre.csv", "w", encoding="utf-8") as livre_csv:
+        livre_csv.write("product_page_url, universal_ product_code (upc), title, price_including_tax,"
+                        "price_excluding_tax, number_available, product_description, category, review_rating, image_url" "\n\n")
+        livre_csv.write(url_livre + "," + "\n" + liste_carac_livre[0].text + "," + "\n" + titre.string + "," + "\n" +
+                        liste_carac_livre[3].text.replace("Â", "") + "," + "\n" + liste_carac_livre[2].text.replace("Â", "") +
+                        "," + "\n" + liste_carac_livre[5].text + "," + "\n" + '"' + description + '"' + "," + "\n" + categorie.text.replace("\n","") +
+                        "," + "\n" + liste_carac_livre[6].text + "," + "\n" + image_source.replace("../..", "http://books.toscrape.com"))
