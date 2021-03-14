@@ -3,6 +3,8 @@ import requests
 import os
 import csv
 
+liste_urls_livres = []
+
 """
 Maintenant que vous avez obtenu les informations concernant un premier livre, vous pouvez essayer de récupérer 
 toutes les données nécessaires pour toute une catégorie d'ouvrages. Choisissez n'importe quelle catégorie sur 
@@ -15,25 +17,27 @@ Remarque : certaines pages de catégorie comptent plus de 20 livres, qui sont do
 pages («  pagination  »). Votre application doit être capable de parcourir automatiquement les multiples pages si présentes. 
 """
 
-liste_urls_livres = []
-url = "http://books.toscrape.com/catalogue/category/books/historical-fiction_4/index.html"
-req = requests.get(url)
-soup = BeautifulSoup(req.text, features="html.parser")
+def copie_urls_liste(url_a_parcourir):
+    """
+    Parcours l'url donnée en paramètre, et copie les liens vers chaque page dans une liste
 
-urls_livre = soup.findAll("h3")
-for i in urls_livre: # boucle qui copie chaque url de la page dans une liste
-    lien = i.find("a")
-    lien = lien["href"]
-    lien = lien.replace("../../..", "http://books.toscrape.com/catalogue")
-    liste_urls_livres.append((lien))
-    # print(liste_urls_livres)
+    """
+    req = requests.get(url_a_parcourir)
+    soup = BeautifulSoup(req.text, features="html.parser")
 
-# noms_cat = soup.find("ul", {"class" : "nav"}).find("li").text.replace("\n", "") # Trouve les strings des catégories, pour colonnes dans CSV
-# print(noms_cat.replace())
+    url_boucle = soup.findAll("h3")
+    for i in url_boucle:
+        lien = i.find("a")
+        lien = lien["href"]
+        lien = lien.replace("../../..", "http://books.toscrape.com/catalogue")
+        liste_urls_livres.append((lien))
 
-# nom_cat = soup.find("h1").text
-
-
+    if soup.find("li", {"class": "next"}): # si il y a un bouton "next sur la page
+        bouton_next = soup.find("li", {"class": "next"})
+        url_next_page = bouton_next.find("a")
+        url_next_page = url_next_page["href"]
+        url_next_page = url_a_parcourir.replace("index.html", url_next_page)
+        copie_urls_liste(url_next_page)
 
 
 def scrap_page_livre(url_page_livre):
@@ -73,16 +77,14 @@ def scrap_page_livre(url_page_livre):
         with open(titre.text.replace(":", " ") + ".csv", "w", encoding="utf-8") as livre_csv:
             livre_csv.write("product_page_url, universal_ product_code (upc), title, price_including_tax,"
                             "price_excluding_tax, number_available, product_description, category, review_rating, image_url" "\n\n")
-            livre_csv.write(url_page_livre + ",\n" + liste_carac_livre[0].text + ",\n" + titre.string + ",\n" +
-                            liste_carac_livre[3].text.replace("Â", "") + ",\n" + liste_carac_livre[2].text.replace("Â", "") +
-                            ",\n" + liste_carac_livre[5].text + ",\n" + '"' + description + '"' + ",\n" + categorie.text.replace("\n","") +
-                            ",\n" + liste_carac_livre[6].text + ",\n" + image_source.replace("../..", "http://books.toscrape.com"))
+            livre_csv.write(url_page_livre + "," + liste_carac_livre[0].text + "," + titre.string + "," +
+                            liste_carac_livre[3].text.replace("Â", "") + "," + liste_carac_livre[2].text.replace("Â", "") +
+                            "," + liste_carac_livre[5].text + "," + '"' + description.replace('"', '^') + '"' + "," + categorie.text.replace("\n","") +
+                            "," + liste_carac_livre[6].text + "," + image_source.replace("../..", "http://books.toscrape.com"))
 
 
-csv = scrap_page_livre("http://books.toscrape.com/catalogue/forever-and-forever-the-courtship-of-henry-longfellow-and-fanny-appleton_894/index.html")
-print(csv)
+copie_urls_liste("http://books.toscrape.com/catalogue/category/books/historical-fiction_4/index.html")
+print(liste_urls_livres)
 
-# for i in range(len(liste_urls_livres)):
-#     scrap_page_livre(liste_urls_livres[i])
 
 
