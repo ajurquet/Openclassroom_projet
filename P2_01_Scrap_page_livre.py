@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 import requests
 
+
 """
 Écrivez un script Python qui visite cette page et en extrait les informations suivantes :
 product_page_url
@@ -16,7 +17,7 @@ image_url
 Écrivez les données dans un fichier CSV qui utilise les champs ci-dessus comme en-têtes de colonnes.
 """
 
-url = "http://books.toscrape.com/catalogue/history-of-beauty_521/index.html"
+url = "http://books.toscrape.com/catalogue/alice-in-wonderland-alices-adventures-in-wonderland-1_5/index.html"
 req = requests.get(url)
 soup = BeautifulSoup(req.text, features="html.parser")
 
@@ -25,7 +26,11 @@ titre = soup.find("h1")
 liste_carac_livre = soup.findAll("td")
 
 description = soup.find("div", id="product_description")
-description = description.nextSibling.nextSibling.string # J'ai recherché le tag "div" avec l'id "product_description" et je me suis déplacé 2 fois pour trouver la description
+if description is not None:
+    description = description.nextSibling.nextSibling.string # J'ai recherché le tag "div" avec l'id "product_description" et je me suis déplacé 2 fois pour trouver la description
+else:
+    description = ""
+
 
 categorie = soup.find("li")
 categorie = categorie.nextSibling.nextSibling.nextSibling.nextSibling

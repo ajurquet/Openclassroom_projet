@@ -1,22 +1,18 @@
 """
-Maintenant que vous avez obtenu les informations concernant un premier livre, vous pouvez essayer de récupérer toutes
-les données nécessaires pour toute une catégorie d'ouvrages. Choisissez n'importe quelle catégorie sur le site de
-Books to Scrape. Écrivez un script Python qui consulte la page de la catégorie choisie, et extrait l'URL de la
-page Produit de chaque livre appartenant à cette catégorie. Combinez cela avec le travail que vous avez déjà effectué
-afin d'extraire les données produit de tous les livres de la catégorie choisie, puis écrivez les données
-dans un seul fichier CSV.
-
-Remarque : certaines pages de catégorie comptent plus de 20 livres, qui sont donc répartis sur différentes pages
-(«  pagination  »). Votre application doit être capable de parcourir automatiquement les multiples pages si présentes.
+Ensuite, étendez votre travail à l'écriture d'un script qui consulte le site de Books to Scrape,
+extrait toutes les catégories de livres disponibles, puis extrait les informations produit de tous
+les livres appartenant à toutes les différentes catégories, ce serait fantastique  !
+Vous devrez écrire les données dans un fichier CSV distinct pour chaque catégorie de livres.
 """
 
 from bs4 import BeautifulSoup
 import requests
 
-url_cat = "http://books.toscrape.com/catalogue/category/books/sequential-art_5/index.html"
-liste_urls_livres = []
-fin_url = "index.html"
 
+liste_urls_livres = []
+liste_urls_categories = []
+fin_url = "index.html"
+nom_fichier_csv = ""
 
 def copie_urls_livre(url_a_parcourir):
     """
@@ -43,15 +39,15 @@ def copie_urls_livre(url_a_parcourir):
         url_next_page = url_courte + url_next_page
         copie_urls_livre(url_next_page)
 
-
 def scrap_page_livre(url_page_livre):
     """
     Fonction qui visite une page "livre" et en extrait des informations
-
     """
+
     req = requests.get(url_page_livre)
 
     if req.ok:
+
         soup = BeautifulSoup(req.text, features="html.parser")
 
         titre = soup.find("h1")
@@ -60,8 +56,7 @@ def scrap_page_livre(url_page_livre):
 
         description = soup.find("div", id="product_description")
         if description is not None:
-            description = description.nextSibling.nextSibling.string  # J'ai recherché le tag "div" avec l'id
-            # "product_description" et je me suis déplacé 2 fois pour trouver la description
+            description = description.nextSibling.nextSibling.string
         else:
             description = ""
 
@@ -73,22 +68,44 @@ def scrap_page_livre(url_page_livre):
         # donne en résultat les informations demandées, séparées par des virgules.
         return (url_page_livre + "," + '"' + liste_carac_livre[0].text + '"' + "," + '"' + titre.string + '"' + "," + '"' +
                             liste_carac_livre[3].text.replace("Â", "") + '"' + "," + '"' + liste_carac_livre[2].text.replace("Â", "") + '"' +
-                            "," + '"' + liste_carac_livre[5].text + '"' + "," + '"' + description.replace('"', '^') + '"' + "," + '"' + categorie.text.replace("\n","") + '"' +
+                            "," + '"' + liste_carac_livre[5].text + '"' + "," + '"' + description.replace('"', '*') + '"' + "," + '"' + categorie.text.replace("\n","") + '"' +
                             "," + '"' + liste_carac_livre[6].text + '"' + "," +  image_source.replace("../..", "http://books.toscrape.com") + "\n")
 
+def copie_urls_cat():
+    """
+    Copie toutes les urls des catégories dans la liste "liste_urls_categories
+    """
 
-# Trouve le texte de la catégorie pour nom du fichier csv
-req = requests.get(url_cat)
-if req.ok:
+    global liste_urls_categories
+    url_de_base = "http://books.toscrape.com/"
+    req = requests.get(url_de_base)
     soup = BeautifulSoup(req.text, features="html.parser")
-    nom_fichier_csv = soup.find("h1").text
+    cats = soup.find("ul", class_="nav").findAll("a")
 
-copie_urls_livre(url_cat)
-with open(nom_fichier_csv.lower().replace(" ", "_") + ".csv", "w", encoding="utf-8") as cat_csv:
-    cat_csv.write("product_page_url, universal_ product_code (upc), title, price_including_tax,"
-                    "price_excluding_tax, number_available, product_description, category, review_rating, image_url" "\n\n")
-    for url in liste_urls_livres:
-        cat_csv.write(scrap_page_livre(url))
+    for i in cats:
+        i = i["href"]
+        i = url_de_base + i
+        i = i.replace("'", '"')
+        liste_urls_categories.append(i)
+    del (liste_urls_categories[0])
 
 
+copie_urls_cat()
+
+for i in liste_urls_categories:
+    # Trouve le texte de la catégorie pour nom du fichier csv
+    print(i)
+    req = requests.get(i)
+    if req.ok:
+        soup = BeautifulSoup(req.text, features="html.parser")
+        nom_fichier_csv = soup.find("h1").text
+
+        copie_urls_livre(i)
+
+        with open(nom_fichier_csv.lower().replace(" ", "_") + ".csv", "w", encoding="utf-8") as cat_csv:
+            cat_csv.write("product_page_url, universal_ product_code (upc), title, price_including_tax,"
+                            "price_excluding_tax, number_available, product_description, category, review_rating, image_url" "\n\n")
+            for url in liste_urls_livres:
+                cat_csv.write(scrap_page_livre(url))
+        liste_urls_livres = []
 
