@@ -1,21 +1,23 @@
 """
-Ensuite, étendez votre travail à l'écriture d'un script qui consulte le site de Books to Scrape,
-extrait toutes les catégories de livres disponibles, puis extrait les informations produit de tous
-les livres appartenant à toutes les différentes catégories, ce serait fantastique  !
-Vous devrez écrire les données dans un fichier CSV distinct pour chaque catégorie de livres.
+Enfin, prolongez votre travail existant pour télécharger et enregistrer le fichier
+image de chaque page Produit que vous consultez  !
 """
-
 from bs4 import BeautifulSoup
 import requests
+import urllib.request
 import os
+
 
 liste_urls_livres = []
 liste_urls_categories = []
 fin_url = "index.html"
 nom_fichier_csv = ""
 
-if not os.path.exists("books_to_scrape_csv"):
+if not os.path.exists("books_to_scrape_csv/"):
     os.mkdir("books_to_scrape_csv")
+
+if not os.path.exists("images_scrap/"):
+    os.mkdir("images_scrap")
 
 def copie_urls_livre(url_a_parcourir):
     """
@@ -28,7 +30,7 @@ def copie_urls_livre(url_a_parcourir):
     url_boucle = soup.findAll("h3")
     url_courte = url_a_parcourir.replace(fin_url, "")
 
-    for i in url_boucle: # parcours l'url et copie tous les liens pointant vers une page "livre" dans une liste
+    for i in url_boucle: #parcours l'url et copie tous les liens pointant vers une page "livre" dans une liste
         lien = i.find("a")
         lien = lien["href"]
         lien = lien.replace("../../..", "http://books.toscrape.com/catalogue")
@@ -44,7 +46,8 @@ def copie_urls_livre(url_a_parcourir):
 
 def scrap_page_livre(url_page_livre):
     """
-    Fonction qui visite une page "livre" et en extrait des informations
+    Fonction qui visite une page "livre" et en extrait des informations,
+    et copie les images dans le repertoire "images_scrap"
     """
 
     req = requests.get(url_page_livre)
@@ -79,10 +82,12 @@ def scrap_page_livre(url_page_livre):
         image_source = soup.find("img").get("src")
         image_source = image_source.replace("../..", "http://books.toscrape.com")
 
+        urllib.request.urlretrieve(image_source, "images_scrap/" + titre.replace('"', '').replace(":", ";").replace("*", " ").replace("?", "") + ".jpg")
 
         # donne en résultat les informations demandées, séparées par des virgules.
         return (url_page_livre + "," + upc + "," + titre + "," + price_including_tax + "," + price_excluding_tax +
                             "," + stock + "," + product_description + "," + categorie + "," + review_rating + "," + image_source + "\n")
+
 
 def copie_urls_cat():
     """
@@ -101,7 +106,6 @@ def copie_urls_cat():
         i = i.replace("'", '"')
         liste_urls_categories.append(i)
     del (liste_urls_categories[0])
-
 
 copie_urls_cat()
 
