@@ -25,7 +25,7 @@ def copie_urls_livre(url_a_parcourir):
     url_boucle = soup.findAll("h3")
     url_courte = url_a_parcourir.replace(fin_url, "")
 
-    for i in url_boucle: #parcours l'url et copie tous les liens pointant vers une page "livre" dans une liste
+    for i in url_boucle: # parcours l'url et copie tous les liens pointant vers une page "livre" dans une liste
         lien = i.find("a")
         lien = lien["href"]
         lien = lien.replace("../../..", "http://books.toscrape.com/catalogue")
@@ -50,9 +50,14 @@ def scrap_page_livre(url_page_livre):
 
         soup = BeautifulSoup(req.text, features="html.parser")
 
-        titre = soup.find("h1")
+        titre = '"' + soup.find("h1").string + '"'
 
         liste_carac_livre = soup.findAll("td")
+        upc = '"' + liste_carac_livre[0].text + '"'
+        price_including_tax = '"' + liste_carac_livre[3].text.replace("Â", "") + '"'
+        price_excluding_tax = '"' + liste_carac_livre[2].text.replace("Â", "") + '"'
+        stock = '"' + liste_carac_livre[5].text + '"'
+
 
         description = soup.find("div", id="product_description")
         if description is not None:
@@ -60,16 +65,21 @@ def scrap_page_livre(url_page_livre):
         else:
             description = ""
 
+        product_description = '"' + description.replace('"', '*') + '"'
+
         categorie = soup.find("li")
         categorie = categorie.nextSibling.nextSibling.nextSibling.nextSibling
+        categorie = '"' + categorie.text.replace("\n","") + '"'
+
+        review_rating = '"' + liste_carac_livre[6].text + '"'
 
         image_source = soup.find("img").get("src")
+        image_source = image_source.replace("../..", "http://books.toscrape.com")
+
 
         # donne en résultat les informations demandées, séparées par des virgules.
-        return (url_page_livre + "," + '"' + liste_carac_livre[0].text + '"' + "," + '"' + titre.string + '"' + "," + '"' +
-                            liste_carac_livre[3].text.replace("Â", "") + '"' + "," + '"' + liste_carac_livre[2].text.replace("Â", "") + '"' +
-                            "," + '"' + liste_carac_livre[5].text + '"' + "," + '"' + description.replace('"', '*') + '"' + "," + '"' + categorie.text.replace("\n","") + '"' +
-                            "," + '"' + liste_carac_livre[6].text + '"' + "," +  image_source.replace("../..", "http://books.toscrape.com") + "\n")
+        return (url_page_livre + "," + upc + "," + titre + "," + price_including_tax + "," + price_excluding_tax +
+                            "," + stock + "," + product_description + "," + categorie + "," + review_rating + "," + image_source + "\n")
 
 def copie_urls_cat():
     """

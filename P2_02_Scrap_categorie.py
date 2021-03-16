@@ -52,29 +52,39 @@ def scrap_page_livre(url_page_livre):
     req = requests.get(url_page_livre)
 
     if req.ok:
+
         soup = BeautifulSoup(req.text, features="html.parser")
 
-        titre = soup.find("h1")
+        titre = '"' + soup.find("h1").string + '"'
 
         liste_carac_livre = soup.findAll("td")
+        upc = '"' + liste_carac_livre[0].text + '"'
+        price_including_tax = '"' + liste_carac_livre[3].text.replace("Â", "") + '"'
+        price_excluding_tax = '"' + liste_carac_livre[2].text.replace("Â", "") + '"'
+        stock = '"' + liste_carac_livre[5].text + '"'
+
 
         description = soup.find("div", id="product_description")
         if description is not None:
-            description = description.nextSibling.nextSibling.string  # J'ai recherché le tag "div" avec l'id
-            # "product_description" et je me suis déplacé 2 fois pour trouver la description
+            description = description.nextSibling.nextSibling.string
         else:
             description = ""
 
+        product_description = '"' + description.replace('"', '*') + '"'
+
         categorie = soup.find("li")
         categorie = categorie.nextSibling.nextSibling.nextSibling.nextSibling
+        categorie = '"' + categorie.text.replace("\n","") + '"'
+
+        review_rating = '"' + liste_carac_livre[6].text + '"'
 
         image_source = soup.find("img").get("src")
+        image_source = image_source.replace("../..", "http://books.toscrape.com")
+
 
         # donne en résultat les informations demandées, séparées par des virgules.
-        return (url_page_livre + "," + '"' + liste_carac_livre[0].text + '"' + "," + '"' + titre.string + '"' + "," + '"' +
-                            liste_carac_livre[3].text.replace("Â", "") + '"' + "," + '"' + liste_carac_livre[2].text.replace("Â", "") + '"' +
-                            "," + '"' + liste_carac_livre[5].text + '"' + "," + '"' + description.replace('"', '^') + '"' + "," + '"' + categorie.text.replace("\n","") + '"' +
-                            "," + '"' + liste_carac_livre[6].text + '"' + "," +  image_source.replace("../..", "http://books.toscrape.com") + "\n")
+        return (url_page_livre + "," + upc + "," + titre + "," + price_including_tax + "," + price_excluding_tax +
+                            "," + stock + "," + product_description + "," + categorie + "," + review_rating + "," + image_source + "\n")
 
 
 # Trouve le texte de la catégorie pour nom du fichier csv
