@@ -9,7 +9,7 @@ Date de création : Mars 2021.
 
   Ce projet consiste à scraper les données du site "http://books.toscrape.com/", et de les sauvegarder dans un ou des fichiers.
 
-Le premmier fichier "P2_01_Scrap_page_livre.py" aspire les différentes données d'une page de livre (titre, prix, stock, etc...), et les copie dans un fichier csv.
+Le premier fichier "P2_01_Scrap_page_livre.py" aspire les différentes données d'une page de livre (titre, prix, stock, etc.), et les copie dans un fichier csv.
 
 Le second fichier "P2_02_Scrap_categorie.py" utilise le code du précédent fichier, et l'applique à tous le livres d'une catégorie. Il copie toutes le données dans un fichier csv.
 
