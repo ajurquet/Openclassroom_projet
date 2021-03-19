@@ -2,7 +2,7 @@
 Écrivez un script Python qui visite cette page et en extrait les informations suivantes :
 
 product_page_url
-universal_ product_code (upc)
+universal_product_code (upc)
 title
 price_including_tax
 price_excluding_tax
@@ -23,14 +23,15 @@ req = requests.get(url)
 
 if req.ok:
 
-    soup = BeautifulSoup(req.text, features="html.parser")
+    soup = BeautifulSoup(req.content, features="html.parser")
 
     titre = '"' + soup.find("h1").string + '"'
 
-    liste_carac_livre = soup.findAll("td")
+    liste_carac_livre = soup.find_all("td")
+
     upc = '"' + liste_carac_livre[0].text + '"'
-    price_including_tax = '"' + liste_carac_livre[3].text.replace("Â", "") + '"'
-    price_excluding_tax = '"' + liste_carac_livre[2].text.replace("Â", "") + '"'
+    price_including_tax = '"' + liste_carac_livre[3].text + '"'
+    price_excluding_tax = '"' + liste_carac_livre[2].text + '"'
     stock = '"' + liste_carac_livre[5].text + '"'
 
     description = soup.find("div", id="product_description")
@@ -38,7 +39,6 @@ if req.ok:
         description = description.nextSibling.nextSibling.string
     else:
         description = ""
-
     product_description = '"' + description.replace('"', '*') + '"'
 
     categorie = soup.find("li")
@@ -52,7 +52,7 @@ if req.ok:
 
     # Création d'un fichier csv et copie des données
     nom_fichier_csv = soup.find("h1").text
-    with open(nom_fichier_csv.lower().replace(" ", "_") + ".csv", "w", encoding="utf-8") as fiche_livre:
+    with open(nom_fichier_csv.lower().replace(" ", "_") + ".csv", "w", encoding="utf-8-sig") as fiche_livre:
         fiche_livre.write("product_page_url, universal_ product_code (upc), title, price_including_tax,"
                       "price_excluding_tax, number_available, product_description, category, review_rating, image_url" "\n\n")
         fiche_livre.write(url + "," + upc + "," + titre + "," + price_including_tax + "," + price_excluding_tax +

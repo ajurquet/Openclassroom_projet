@@ -26,11 +26,11 @@ def copie_urls_livre(url_a_parcourir):
     """
     global fin_url
     req = requests.get(url_a_parcourir)
-    soup = BeautifulSoup(req.text, features="html.parser")
+    soup = BeautifulSoup(req.content, features="html.parser")
     url_boucle = soup.findAll("h3")
     url_courte = url_a_parcourir.replace(fin_url, "")
 
-    for i in url_boucle: #parcours l'url et copie tous les liens pointant vers une page "livre" dans une liste
+    for i in url_boucle: # parcours l'url et copie tous les liens pointant vers une page "livre" dans la liste "liste_urls_livres"
         lien = i.find("a")
         lien = lien["href"]
         lien = lien.replace("../../..", "http://books.toscrape.com/catalogue")
@@ -54,14 +54,14 @@ def scrap_page_livre(url_page_livre):
 
     if req.ok:
 
-        soup = BeautifulSoup(req.text, features="html.parser")
+        soup = BeautifulSoup(req.content, features="html.parser")
 
         titre = '"' + soup.find("h1").string + '"'
 
         liste_carac_livre = soup.findAll("td")
         upc = '"' + liste_carac_livre[0].text + '"'
-        price_including_tax = '"' + liste_carac_livre[3].text.replace("Â", "") + '"'
-        price_excluding_tax = '"' + liste_carac_livre[2].text.replace("Â", "") + '"'
+        price_including_tax = '"' + liste_carac_livre[3].text + '"'
+        price_excluding_tax = '"' + liste_carac_livre[2].text + '"'
         stock = '"' + liste_carac_livre[5].text + '"'
 
 
@@ -114,7 +114,7 @@ for i in liste_urls_categories:
     print(i)
     req = requests.get(i)
     if req.ok:
-        soup = BeautifulSoup(req.text, features="html.parser")
+        soup = BeautifulSoup(req.content, features="html.parser")
         nom_fichier_csv = soup.find("h1").text
 
         copie_urls_livre(i)

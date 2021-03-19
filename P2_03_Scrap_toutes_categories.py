@@ -24,17 +24,17 @@ def copie_urls_livre(url_a_parcourir):
     """
     global fin_url
     req = requests.get(url_a_parcourir)
-    soup = BeautifulSoup(req.text, features="html.parser")
+    soup = BeautifulSoup(req.content, features="html.parser")
     url_boucle = soup.findAll("h3")
     url_courte = url_a_parcourir.replace(fin_url, "")
 
-    for i in url_boucle: # parcours l'url et copie tous les liens pointant vers une page "livre" dans une liste
+    for i in url_boucle: # parcours l'url et copie tous les liens pointant vers une page "livre" dans la liste "liste_urls_livres"
         lien = i.find("a")
         lien = lien["href"]
         lien = lien.replace("../../..", "http://books.toscrape.com/catalogue")
         liste_urls_livres.append((lien))
 
-    if soup.find("li", {"class": "next"}): # si il y a un bouton "next sur la page, relance la fonction avec la page suivante
+    if soup.find("li", {"class": "next"}): # si il y a un bouton "next" sur la page, relance la fonction avec la page suivante
         bouton_next = soup.find("li", {"class": "next"})
         url_next_page = bouton_next.find("a")
         url_next_page = url_next_page["href"]
@@ -51,14 +51,14 @@ def scrap_page_livre(url_page_livre):
 
     if req.ok:
 
-        soup = BeautifulSoup(req.text, features="html.parser")
+        soup = BeautifulSoup(req.content, features="html.parser")
 
         titre = '"' + soup.find("h1").string + '"'
 
         liste_carac_livre = soup.findAll("td")
         upc = '"' + liste_carac_livre[0].text + '"'
-        price_including_tax = '"' + liste_carac_livre[3].text.replace("Â", "") + '"'
-        price_excluding_tax = '"' + liste_carac_livre[2].text.replace("Â", "") + '"'
+        price_including_tax = '"' + liste_carac_livre[3].text + '"'
+        price_excluding_tax = '"' + liste_carac_livre[2].text + '"'
         stock = '"' + liste_carac_livre[5].text + '"'
 
 
@@ -110,12 +110,12 @@ for i in liste_urls_categories:
     print(i)
     req = requests.get(i)
     if req.ok:
-        soup = BeautifulSoup(req.text, features="html.parser")
+        soup = BeautifulSoup(req.content, features="html.parser")
         nom_fichier_csv = soup.find("h1").text
 
         copie_urls_livre(i)
 
-        with open("books_to_scrape_csv/" + nom_fichier_csv.lower().replace(" ", "_") + ".csv", "w", encoding="utf-8") as cat_csv:
+        with open("books_to_scrape_csv/" + nom_fichier_csv.lower().replace(" ", "_") + ".csv", "w", encoding="utf-8-sig") as cat_csv:
             cat_csv.write("product_page_url, universal_ product_code (upc), title, price_including_tax,"
                             "price_excluding_tax, number_available, product_description, category, review_rating, image_url" "\n\n")
             for url in liste_urls_livres:
