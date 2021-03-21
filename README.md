@@ -23,7 +23,7 @@ Le dernier fichier "P2_04_Scrap_images.py" reprend le code précédent, et aspir
 (sans les guillements), dans le repertoire de votre choix.
 
 Vous devrez ensuite installer les différents paquets requis pour que les scripts soient utilisable. Ils sont listés dans le fichier "requirements.txt". Il suffite de taper la 
-commande "pip install requests" et "from bs4 install BeautifulSoup" pour que tous les paquets nécéssaires soient installés.
+commande "pip install -r requirements.txt" pour que tous les paquets nécéssaires soient installés.
 
 Il suffit ensuite de taper la commande "python" suivi du nom du fichier pour le lancer.
   
