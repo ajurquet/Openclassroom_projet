@@ -15,45 +15,58 @@ image_url
 Écrivez les données dans un fichier CSV qui utilise les champs ci-dessus comme en-têtes de colonnes.
 """
 
-from bs4 import BeautifulSoup
 import requests
+from bs4 import BeautifulSoup
+import csv
 
-url = "http://books.toscrape.com/catalogue/the-secret-of-dreadwillow-carse_944/index.html"
+url = "http://books.toscrape.com/catalogue/lumberjanes-vol-3-a-terrible-plan-lumberjanes-9-12_905/index.html"
 req = requests.get(url)
 
 if req.ok:
 
     soup = BeautifulSoup(req.content, features="html.parser")
 
-    titre = '"' + soup.find("h1").string + '"'
+    titre = soup.title.text
+    titre = soup.find("ul", class_="breadcrumb")
+    titre = soup.find("li", class_="active").text
 
-    liste_carac_livre = soup.find_all("td")
+    tableau = soup.find("table", class_="table table-striped")
+    tableau = tableau.find_all("td")
 
-    upc = '"' + liste_carac_livre[0].text + '"'
-    price_including_tax = '"' + liste_carac_livre[3].text + '"'
-    price_excluding_tax = '"' + liste_carac_livre[2].text + '"'
-    stock = '"' + liste_carac_livre[5].text + '"'
+    upc = tableau[0].text
 
-    description = soup.find("div", id="product_description")
-    if description is not None:
-        description = description.nextSibling.nextSibling.string
-    else:
-        description = ""
-    product_description = '"' + description.replace('"', '*') + '"'
+    prix_ht = tableau[2].text
+    prix_ht = prix_ht.replace("£", "")
+    prix_ht = float(prix_ht)
 
-    categorie = soup.find("li")
-    categorie = categorie.nextSibling.nextSibling.nextSibling.nextSibling
-    categorie = '"' + categorie.text.replace("\n", "") + '"'
+    prix_ttc = tableau[3].text
+    prix_ttc = prix_ttc.replace("£", "")
+    prix_ttc = float(prix_ttc)
 
-    review_rating = '"' + liste_carac_livre[6].text + '"'
+    stock = tableau[5].text
+    stock = stock.replace("In stock (", "").replace(" available)", "")
+    stock = int(stock)
 
-    image_source = soup.find("img").get("src")
-    image_source = image_source.replace("../..", "http://books.toscrape.com")
+    nb_reviews = tableau[6].text
+    nb_reviews = int(nb_reviews)
 
-    # Création d'un fichier csv et copie des données
-    nom_fichier_csv = soup.find("h1").text
-    with open(nom_fichier_csv.lower().replace(" ", "_") + ".csv", "w", encoding="utf-8-sig") as fiche_livre:
-        fiche_livre.write("product_page_url, universal_ product_code (upc), title, price_including_tax,"
-                      "price_excluding_tax, number_available, product_description, category, review_rating, image_url" "\n\n")
-        fiche_livre.write(url + "," + upc + "," + titre + "," + price_including_tax + "," + price_excluding_tax +
-            "," + stock + "," + product_description + "," + categorie + "," + review_rating + "," + image_source + "\n")
+    description = soup.find_all("p")
+    description =description[3].text
+
+    img_url = soup.find("img").get("src")
+    img_url = img_url.replace("../..", "http://books.toscrape.com")
+
+    categorie = soup.find("ul", class_="breadcrumb").find_all("li")
+    categorie = categorie[2].text.strip()
+
+
+# Création d'un fichier csv et copie des données
+liste_titre = ["product_page_url", "universal_ product_code (upc)", "title", "price_including_tax",
+               "price_excluding_tax", "number_available", "product_description", "category", "review_rating", "image_url"]
+liste_donnees = [url, upc, titre, prix_ht, prix_ttc, stock, description, categorie, nb_reviews, img_url]
+
+with open("P2_01_Scrap_page_livre.csv", "w", encoding="utf-8-sig") as csv_file:
+
+    csv_file_writer = csv.writer(csv_file)
+    csv_file_writer.writerow(liste_titre)
+    csv_file_writer.writerow(liste_donnees)
