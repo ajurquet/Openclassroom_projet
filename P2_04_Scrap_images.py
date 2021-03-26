@@ -78,8 +78,18 @@ def scrap_page_livre(url_page_livre):
         stock = stock.replace("In stock (", "").replace(" available)", "")
         stock = int(stock)
 
-        nb_reviews = tableau[6].text
-        nb_reviews = int(nb_reviews)
+        nb_etoiles = soup.find("p", class_="star-rating")["class"]
+        nb_etoiles = nb_etoiles[1]
+        if nb_etoiles == "One":
+            nb_etoiles = 1
+        elif nb_etoiles == "Two":
+            nb_etoiles = 2
+        elif nb_etoiles == "Three":
+            nb_etoiles = 3
+        elif nb_etoiles == "Four":
+            nb_etoiles = 4
+        elif nb_etoiles == "Five":
+            nb_etoiles = 5
 
         description = soup.find_all("p")
         description = description[3].text
@@ -98,7 +108,7 @@ def scrap_page_livre(url_page_livre):
                                    "images_scrap/" + upc + " - " + titre.replace('"', '').replace(":", ";").replace("*", " ").replace(
                                        "?", "").replace("/", " ") + ".jpg")
 
-        liste_donnees = [url_page_livre, upc, titre, prix_ht, prix_ttc, stock, description, categorie, nb_reviews, img_url]
+        liste_donnees = [url_page_livre, upc, titre, prix_ht, prix_ttc, stock, description, categorie, nb_etoiles, img_url]
 
         return (liste_donnees)
 
@@ -121,7 +131,7 @@ def copie_urls_cat():
 
 copie_urls_cat()
 
-for i in liste_urls_categories: # parcourt chaque catégorie
+for i in liste_urls_categories:  # parcourt chaque catégorie
     print(i)
 
     # Trouve le titre de la catégorie pour nom du fichier csv
