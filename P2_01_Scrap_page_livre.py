@@ -19,6 +19,7 @@ import requests
 from bs4 import BeautifulSoup
 import csv
 
+
 url = "http://books.toscrape.com/catalogue/scott-pilgrims-precious-little-life-scott-pilgrim-1_987/index.html"
 req = requests.get(url)
 
@@ -61,7 +62,7 @@ if req.ok:
         nb_etoiles = 5
 
     description = soup.find_all("p")
-    description =description[3].text
+    description = description[3].text
 
     img_url = soup.find("img").get("src")
     img_url = img_url.replace("../..", "http://books.toscrape.com")
@@ -72,8 +73,19 @@ if req.ok:
 
 # Création d'un fichier csv et copie des données
 liste_titre = ["product_page_url", "universal_ product_code (upc)", "title", "price_including_tax",
-               "price_excluding_tax", "number_available", "product_description", "category", "review_rating", "image_url"]
-liste_donnees = [url, upc, titre, prix_ht, prix_ttc, stock, description, categorie, nb_etoiles, img_url]
+               "price_excluding_tax", "number_available", "product_description", "category",
+               "review_rating", "image_url"]
+liste_donnees = [url,
+                 upc,
+                 titre,
+                 prix_ht,
+                 prix_ttc,
+                 stock,
+                 description,
+                 categorie,
+                 nb_etoiles,
+                 img_url
+                 ]
 
 with open("P2_01_Scrap_page_livre.csv", "w", encoding="utf-8-sig") as csv_file:
 

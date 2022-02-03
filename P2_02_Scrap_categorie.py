@@ -14,12 +14,14 @@ from bs4 import BeautifulSoup
 import requests
 import csv
 
+
 url_categorie = "http://books.toscrape.com/catalogue/category/books/sequential-art_5/index.html"
 liste_urls_livres = []
 liste_titre = ["product_page_url", "universal_ product_code (upc)", "title", "price_including_tax",
-                   "price_excluding_tax", "number_available", "product_description", "category", "review_rating",
-                   "image_url"]
+               "price_excluding_tax", "number_available", "product_description", "category", "review_rating",
+               "image_url"]
 fin_url_a_remplacer = "index.html"
+
 
 def copie_urls_livre(url_a_parcourir):
     """
@@ -48,6 +50,7 @@ def copie_urls_livre(url_a_parcourir):
         fin_url_a_remplacer = url_next_page
         url_next_page = url_raccourci + url_next_page
         copie_urls_livre(url_next_page)
+
 
 def scrap_page_livre(url_page_livre):
     """
@@ -101,19 +104,26 @@ def scrap_page_livre(url_page_livre):
         categorie = soup.find("ul", class_="breadcrumb").find_all("li")
         categorie = categorie[2].text.strip()
 
-        liste_donnees = [url_page_livre, upc, titre, prix_ht, prix_ttc, stock, description, categorie, nb_etoiles, img_url]
+        liste_donnees = [url_page_livre,
+                         upc,
+                         titre,
+                         prix_ht,
+                         prix_ttc,
+                         stock,
+                         description,
+                         categorie,
+                         nb_etoiles,
+                         img_url
+                         ]
 
         return (liste_donnees)
 
+
 copie_urls_livre(url_categorie)  # appel de la fonction qui copie toutes les urls des livres dans une liste
+
 
 with open("P2_02_Scrap_categorie.csv", "w", encoding="utf-8-sig", newline="") as cat_file:
     csv_file_writer = csv.writer(cat_file)
-    csv_file_writer.writerow(liste_titre) # copie les titres dans le csv
+    csv_file_writer.writerow(liste_titre)  # copie les titres dans le csv
     for i in liste_urls_livres:
         csv_file_writer.writerow(scrap_page_livre(i))
-
-
-
-
-
